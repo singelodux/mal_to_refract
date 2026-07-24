@@ -1,0 +1,22 @@
+# Personal data — never goes in a public repo. The private/ folder structure
+# itself stays tracked (so it exists after a fresh clone, per the README's
+# instructions) via the README.md placeholder in each subfolder; only the
+# actual personal content inside is ignored.
+/private/notes.md
+/private/tvtime_localstorage.json
+/private/mal/*
+!/private/mal/README.md
+/private/output/*
+!/private/output/README.md
+
+# Runtime cache for mal_to_tvtime.py — regenerated on demand, ~7.5MB, goes stale.
+/anime-list-full.json
+
+# Third-party APK bundles pulled in for manifest inspection — large, not ours to redistribute.
+*.apk
+*.apkm
+*.xapk
+
+__pycache__/
+*.pyc
+.DS_Store
