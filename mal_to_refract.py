@@ -1,23 +1,13 @@
 #!/usr/bin/env python3
 """
-Convert a MyAnimeList XML export (Anime List, from
-https://myanimelist.net/panel.php?go=export) into the "TV Time Liberator"
-format — the exact schema Refract's TV Time import expects
-(`tvtime-series-<date>.json` + `tvtime-movies-<date>.json`), confirmed
-against the open-source converter
-https://github.com/jeremy-albinet/tvtime-to-refract-converter, whose
-src/core/model.js documents the canonical shape and src/core/parse-gdpr.js
-shows exactly how TV Time's own real GDPR export maps into it (that
-converter's README states it mirrors the TV Time Out Chrome extension
-byte-for-byte, "so that ... the output is directly consumable by ... the
-Refract team"). This is not a guess at the format — it's the same shape a
-tool built specifically for Refract compatibility produces.
+mal_to_refract.py
+Author:  Singelo Dux
+Repo:    https://github.com/singelodux/mal_to_refract
+License: MIT
 
-Canonical shapes (fields we don't have from MAL are set to their documented
-"unknown" value — null/false/"unknown" — matching what the real GDPR parser
-itself does when TV Time's own export lacks the same data; e.g. episode
-`name` and per-episode `id.tvdb` are null even in genuine GDPR-derived
-output, "not present in GDPR export"):
+Converts a MyAnimeList XML export into the "TV Time Liberator" format Refract's TV Time import expects (`tvtime-series-<date>.json` + `tvtime-movies-<date>.json`). Full rationale — why this format, its provenance, the MAL/TVDB season-merging problem and how Fribb's mapping solves it, coverage limits, and the "not found" investigation — lives in docs/mal-import/ (README.md / README.en.md). This docstring only covers what's needed to read the code below.
+
+Canonical shapes (fields we don't have from MAL are set to their documented "unknown" value — null/false/"unknown" — matching what the real GDPR parser itself does when TV Time's own export lacks the same data; e.g. episode `name` and per-episode `id.tvdb` are null even in genuine GDPR-derived output, "not present in GDPR export"):
 
   show  = { uuid, id:{tvdb,imdb}, created_at, title, status, is_favorite,
             seasons: [{ number, is_specials, episodes: [{
@@ -27,60 +17,19 @@ output, "not present in GDPR export"):
   movie = { id:{tvdb,imdb}, uuid, created_at, title, year,
             watched_at, is_watched, is_favorite, rewatch_count }
 
-THE MAL/TVDB SEASON PROBLEM
-----------------------------
-MyAnimeList gives every season of an anime its own id and its own entry
-(e.g. "Attack on Titan", "Attack on Titan Season 2", "Attack on Titan Season
-3 Part 1" are three separate `mal_id`s, each with its own episode count).
-TV Time (like TheTVDB, which it's built on) instead treats the whole show as
-ONE entry with multiple numbered seasons. Converting id-for-id would give
-you three unrelated "shows" instead of one show across three seasons.
-
-To fix this, we use Fribb's community-maintained anime-lists mapping
-(https://github.com/Fribb/anime-lists, anime-list-full.json), which maps
-each `mal_id` to a `tvdb_id` (+ `imdb_id` where known) plus the TVDB season
-number it corresponds to. We group MAL entries by `tvdb_id` and merge them
-into one show record per TVDB id, with per-season episodes built from the
-real season number instead of guessing.
-
-Coverage isn't 100%: movies, OVAs, specials and some obscure/very new titles
-usually aren't in TheTVDB (it's a TV-episode database) and won't be in the
-mapping — those shows are still emitted, just with `id.tvdb: null` (never
-filled with MAL's own id — that would be actively wrong, since a real
-parser would treat it as a genuine TVDB id and could match the wrong show).
-
 Field mapping notes:
-  - status: MAL's "Dropped" -> "archived", everything else -> "followed".
-    (These are the only two real values TV Time's own GDPR export uses for
-    a followed show, per parse-gdpr.js — TV Time does NOT encode
-    watching/completed/plan-to-watch at the show level; that's entirely
-    derived from episode-level is_watched/watched_at, which is what this
-    script builds too.)
+  - status: MAL's "Dropped" -> "archived", everything else -> "followed". (These are the only two real values TV Time's own GDPR export uses for a followed show, per parse-gdpr.js — TV Time does NOT encode watching/completed/plan-to-watch at the show level; that's entirely derived from episode-level is_watched/watched_at, which is what this script builds too.)
   - MAL's series_type == "Movie" -> emitted as a movie, not a show+season.
-  - episodes 1..my_watched_episodes are marked is_watched (MAL only gives a
-    per-season *count*, not which specific episodes — assumes sequential
-    viewing within a season, which is a season-scoped, much safer
-    assumption than guessing across a whole multi-season show).
-  - rewatch_count comes from MAL's my_times_watched (count - 1, floored at
-    0), applied uniformly to every episode/movie in that entry since MAL
-    doesn't track rewatches per-episode.
-  - watched_at (per episode/movie) uses MAL's my_finish_date, falling back
-    to my_start_date — the closest MAL gets to a real watch timestamp;
-    applied to every episode in that season since MAL has no per-episode
-    date.
+  - episodes 1..my_watched_episodes are marked is_watched (MAL only gives a per-season *count*, not which specific episodes — assumes sequential viewing within a season, which is a season-scoped, much safer assumption than guessing across a whole multi-season show).
+  - rewatch_count comes from MAL's my_times_watched (count - 1, floored at 0), applied uniformly to every episode/movie in that entry since MAL doesn't track rewatches per-episode.
+  - watched_at (per episode/movie) uses MAL's my_finish_date, falling back to my_start_date — the closest MAL gets to a real watch timestamp; applied to every episode in that season since MAL has no per-episode date.
 
 Usage:
-    python3 mal_to_tvtime.py [animelist.xml or .xml.gz] [output_dir]
+    python3 mal_to_refract.py [animelist.xml or .xml.gz] [output_dir]
 
-With no arguments, reads whichever single MAL export it finds in
-private/mal/ (see private/mal/README.md) and writes to private/output/
-(see private/output/README.md) — matching the private/ convention
-documented in docs/mal-import/.
+With no arguments, reads whichever single MAL export it finds in private/mal/ (see private/mal/README.md) and writes to private/output/ (see private/output/README.md) — matching the private/ convention documented in docs/mal-import/.
 
-Needs anime-list-full.json from Fribb/anime-lists next to this script (or
-pass its path as a 3rd argument) — downloaded automatically on first run if
-missing. It's ~7.5MB and updates periodically upstream; don't commit your
-cached copy to a public repo, just re-download it when needed.
+Needs anime-list-full.json from Fribb/anime-lists next to this script (or pass its path as a 3rd argument) — downloaded automatically on first run if missing. It's ~7.5MB and updates periodically upstream; don't commit your cached copy to a public repo, just re-download it when needed.
 """
 
 import gzip
@@ -113,9 +62,20 @@ def ensure_mapping():
         season = (e.get("season") or {}).get("tvdb")
         imdb_ids = e.get("imdb_id") or []
         imdb_id = imdb_ids[0] if imdb_ids else None
+        # Fribb only tags an explicit `season.tvdb` when a mal_id maps to a
+        # season other than the show's first: One Piece, Pokemon and Bleach
+        # each have dozens of movie/special/later-arc mal_ids at season 2+
+        # (or 0 for specials), while the *original* mal_id — the one that IS
+        # season 1 — carries no `season` key at all. Verified across the
+        # whole dataset: no tvdb_id ever has both a season-less entry and
+        # another entry explicitly at season 1, so a missing season next to
+        # a present tvdb_id always means "this is season 1", never genuine
+        # ambiguity. Discarding the tvdb_id whenever season was missing (the
+        # old behavior here) silently dropped correct, unambiguous ids for
+        # well-known shows — see docs/mal-import/ for the investigation.
         mapping[mal_id] = {
-            "tvdb_id": tvdb_id if (tvdb_id and season) else None,
-            "season": season if (tvdb_id and season) else None,
+            "tvdb_id": tvdb_id,
+            "season": (season or 1) if tvdb_id else None,
             "imdb_id": imdb_id,
         }
     return mapping

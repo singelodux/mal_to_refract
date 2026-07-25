@@ -2,9 +2,11 @@
 
 *[Leia em português](README.md)*
 
+**TL;DR:** We tried to recover TV Time watch history from what the browser had persisted locally (Cache Storage, IndexedDB, Local Storage). We found a real, valid session token and the full account profile in Local Storage — more than expected. Still a dead end: both known API hosts (`api2.tozelabs.com` and `api.tvtime.com`) are dead, each in a different way, and neither answers data requests, token or no token.
+
 Goal: instead of the phone, try to recover watch history from what the **browser** persisted locally for the web app (`https://app.tvtime.com/`) — Cache Storage, IndexedDB and Local Storage — since a DevTools screenshot showed ~20.5MB of stored data even though the watchlist appeared empty with "a network error occurred".
 
-Tested on Brave (Chromium). Result: **real account data was sitting in local storage (contrary to what this investigation thought halfway through), and it's still useless** — the backend isn't up to accept it, even with a valid, unexpired session.
+Tested on Brave (Chromium). Result: **real account data was sitting in local storage, and it's still useless** — the backend isn't up to accept it, even with a valid, unexpired session.
 
 ## 1. Finding per-origin storage without opening DevTools
 
@@ -52,10 +54,6 @@ Once the app managed to authenticate (`flutter.isLoggedIn: "true"`), `localStora
 - `flutter.seriesToSkipWatchPreviousEpisodes` — a list of show IDs.
 
 This overturns the earlier conclusion: the web app **does** persist a useful account summary locally once authenticated — it just doesn't keep the full episode-by-episode history the way the native app's `DioCache.db` does.
-
-### ⚠️ Never paste this token into a third-party site
-
-There are community "archive" sites (not affiliated with Whip Media/TV Time) that specifically ask for this `flutter.jwtToken`, promising to "unlock more data" or "help the community". **Don't.** A valid session token gives whoever receives it API-level access to your account — a classic mass credential-harvesting pattern, dressed up as a recovery tool. As the next section shows, the real backend no longer answers to this token anyway, which makes the "unlock data" claim technically incoherent.
 
 ## 4. Finding the real API host (from the cached app bundle)
 

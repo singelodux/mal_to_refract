@@ -2,6 +2,8 @@
 
 *[Leia em português](README.md)*
 
+**TL;DR:** We tried to pull TV Time's `DioCache.db` off an unrooted Android phone via `adb backup`. The app's manifest allows backup and `adb` connects fine, but the result is always an empty 47-byte `.ab` file — since Android 12, full `adb backup` for third-party apps is blocked at the OS level on production builds, regardless of the app's own configuration. Without root or a debuggable build, there's no way around it.
+
 Goal: pull TV Time's local cache (`DioCache.db`, under the app's private `Documents/` folder) off an Android phone **without root**, using `adb backup`.
 
 Tested on a Samsung Galaxy S22 (SM-S901E), Android 16, TV Time `com.tozelabs.tvshowtime` v10.11.0. Result: **not possible**, for reasons that apply to any modern (Android 12+) unrooted, non-debuggable app — not specific to this phone or this app.

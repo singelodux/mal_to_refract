@@ -2,9 +2,9 @@
 
 *[Read in English](README.en.md)*
 
-Com os Planos A e B esgotados ([docs/unrooted-android](../unrooted-android/), [docs/browser-storage](../browser-storage/)), não há como recuperar o histórico completo do TV Time. O MyAnimeList (MAL), ao contrário do TV Time, continua no ar e tem um export oficial — por isso o Plano C muda de "recuperar" para "reconstruir": usar o que já está registado no MAL para gerar um ficheiro de importação de anime para a app seguinte.
+Com os Planos A e B esgotados ([docs/unrooted-android](../unrooted-android/), [docs/browser-storage](../browser-storage/)), não encontrámos forma de recuperar o histórico completo do TV Time por essas vias — o que não significa que seja impossível, só que estes dois caminhos bateram num beco sem saída. O MyAnimeList (MAL), ao contrário do TV Time, continua no ar e tem um export oficial — por isso o Plano C muda de "recuperar" para "reconstruir": usar o que já está registado no MAL para gerar um ficheiro de importação de anime para a app seguinte.
 
-**Testado e confirmado a funcionar** contra o import "TV Time" real do [Refract](https://getrefract.app/): 52 filmes + 237 séries aceites sem erro, na primeira tentativa com o schema correto (ver secção 4).
+**Testado e confirmado a funcionar** contra o import "TV Time" real do [Refract](https://getrefract.app/): 52 filmes + 237 séries aceites sem erro, na primeira tentativa com o schema correto (ver secção 5).
 
 ## 1. O problema: o app seguinte não importa do MAL diretamente
 
@@ -63,14 +63,24 @@ Com isto, agrupamos por `tvdb_id` e fundimos as várias entradas do MAL numa só
 
 Cobertura: nem tudo tem `tvdb_id` — filmes, OVAs e specials normalmente não estão na TVDB (é uma base de dados de séries de TV). Esses ficam com `id.tvdb: null` (nunca com o id do MAL disfarçado de id da TVDB — isso enganaria um parser real a associar à série errada). Séries do tipo `Movie` no MAL são emitidas como filme, não como série de um episódio só — usando o `imdb_id` do mapeamento quando existe, já que a TVDB cobre mal filmes de anime.
 
-## 4. Como correr
+## 4. Porquê alguns títulos ficam "não encontrados" no Refract
+
+O import do Refract reporta quantas entradas não conseguiu casar com o catálogo dele. A hipótese óbvia seria o mesmo problema de contagem temporada-a-temporada da secção 3 — mas isso não se sustenta: o script já funde multi-temporada corretamente antes de o ficheiro sair de cá. Comparando o `anime-list-full.json` com o que o script gera, há **duas causas sobrepostas**, distintas desse problema:
+
+**a) O script descartava `tvdb_id` bons sem necessidade.** O código original só aceitava o `tvdb_id` de uma entrada se o mapeamento também trouxesse `season.tvdb` explícito — senão, descartava os dois. Mas o Fribb só marca `season.tvdb` quando o `mal_id` corresponde a uma temporada **diferente** da primeira: "One Piece", "Pokemon", "Hunter x Hunter (2011)", "Bleach" e outras séries longas têm dezenas de `mal_id` de filmes/specials/arcos posteriores com `season` explícito (2, 6, 14, ou 0 para specials) — mas a entrada **original** de cada uma, que É a temporada 1, não tem campo `season` nenhum. Verificado contra o dataset inteiro: nenhum `tvdb_id` tem ao mesmo tempo uma entrada sem `season` e outra explicitamente em `season 1` — logo, faltar `season` ao lado de um `tvdb_id` presente significa sempre "isto é a temporada 1", nunca ambiguidade real. A regra antiga estava a apagar ids corretos e inequívocos de séries bem conhecidas só por excesso de cautela.
+
+  Corrigido: se `tvdb_id` existe, é sempre mantido, com `season` a assumir `1` quando ausente (ver comentário em `ensure_mapping()` no script).
+
+**b) A parte que não dá para corrigir por aqui: o fallback por título do Refract.** Nos testes feitos aqui, mesmo depois do fix, séries como `Bleach` e `Naruto` já eram encontradas com sucesso apesar de ficarem sem `tvdb_id` (o Refract caiu para um fallback por título e acertou) — enquanto outras na mesma situação exata, como `One Piece`, `Pokemon` e `Hunter x Hunter (2011)`, ficaram descartadas como "não encontradas". O padrão mais provável nos casos que falham: sufixos que só existem no MAL para desambiguar remakes (`Hunter x Hunter (2011)`, `Fairy Tail (2014)`, `Suzumiya Haruhi no Yuuutsu (2009)`) não batem com o título oficial sem o ano; e apareceu pelo menos um caso (`Initial D Third Stage`, um filme) com **os dois ids preenchidos** e mesmo assim não encontrado — sinal de que, para filmes, o Refract pode nem usar o campo `tvdb` (a TVDB não é uma base de filmes fiável). Isto acontece do lado do Refract, fora do nosso controlo — o fix acima só garante que não estamos a jogar fora informação boa antes de lá chegar. Quantos títulos ficam "não encontrados" no teu caso depende inteiramente da tua lista — os nomes acima são só exemplos que apareceram durante os testes, não uma lista fixa.
+
+## 5. Como correr
 
 ```bash
 # 1. Exportar do MAL: https://myanimelist.net/panel.php?go=export
 #    (com sessão iniciada) → "Anime List" → sai um .xml ou .xml.gz
 #    Coloca o ficheiro em private/mal/ (ver private/mal/README.md)
 
-python3 mal_to_tvtime.py
+python3 mal_to_refract.py
 # escreve private/output/tvtime-series-<hoje>.json e tvtime-movies-<hoje>.json
 ```
 
@@ -80,4 +90,4 @@ Resultado de um teste real: **360 entradas do MAL → 237 séries + 52 filmes** 
 
 ## Conclusão
 
-O script (`mal_to_tvtime.py`) está pronto a partilhar, e o formato que produz está **confirmado** contra o import real do Refract, não é só uma reconstrução informada. Resolve o problema de normalização temporada-a-temporada corretamente, separa filmes de séries como o TV Time faz, e é reaproveitável para qualquer combinação MAL → TV Time Liberator.
+O script (`mal_to_refract.py`) está pronto a partilhar, e o formato que produz está **confirmado** contra o import real do Refract, não é só uma reconstrução informada. Resolve o problema de normalização temporada-a-temporada corretamente, separa filmes de séries como o TV Time faz, e é reaproveitável para qualquer combinação MAL → TV Time Liberator.

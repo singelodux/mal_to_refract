@@ -1,4 +1,4 @@
-# Notas de investigação (fontes de terceiros)
+# Recursos (fontes de terceiros)
 
 Recolha organizada do que a comunidade partilhou sobre o encerramento do TV Time — Reddit, gists, o Discord do Refract. Isto é matéria-prima; as conclusões e testes próprios deste projeto estão em [`../`](../) (Planos A/B/C).
 
@@ -28,7 +28,7 @@ A app guarda as respostas da API num cache HTTP local, `DioCache.db`. O desafio 
 
 A pesquisa na app parou de funcionar antes do encerramento oficial. Havia uma forma de marcar filmes na mesma ([thread original](https://www.reddit.com/r/TVTime/comments/1ux5qv8/track_movies_you_watched_on_tv_time_in_the_past/)), navegando diretamente para a página do filme pelo ID do TheTVDB:
 
-```
+```text
 https://app.tvtime.com/movie/<tvdb-id>
 ```
 

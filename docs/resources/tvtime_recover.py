@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+Rewritten from a community script originally shared by u/xjki
+(gist: https://gist.github.com/xjki/1ed43f7f12ee29bd34f5e6805ac6e93a) in
+https://www.reddit.com/r/TVTime/comments/1v0tzgl/tvtime_data_recovery_script_from_iphone_app_using/ —
+this version aims to be more complete (see docs/resources/README.md for context).
+
 Recover TV Time data from an offline DioCache.db (the app's HTTP response cache).
 The cache stores cached JSON API responses in table `cache_dio(key, subKey,
 content, ...)`. `key` is a hash of the request URL and `subKey` a hash of the

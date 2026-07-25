@@ -2,9 +2,11 @@
 
 *[Read in English](README.en.md)*
 
+**TL;DR:** Tentámos recuperar o histórico do TV Time a partir do que o browser guardou localmente (Cache Storage, IndexedDB, Local Storage). Encontrámos um token de sessão real e válido e o perfil completo da conta em Local Storage — mais do que se esperava. Mesmo assim, é um beco sem saída: os dois hosts de API conhecidos (`api2.tozelabs.com` e `api.tvtime.com`) estão ambos mortos, cada um de forma diferente, e nenhum responde a pedidos de dados, com token ou sem ele.
+
 Objetivo: em vez do telemóvel, tentar recuperar o histórico a partir do que o **browser** guardou localmente da web app (`https://app.tvtime.com/`) — Cache Storage, IndexedDB e Local Storage — já que uma screenshot do DevTools mostrava ~20.5MB de dados guardados ali, apesar da watchlist aparecer vazia com "a network error occurred".
 
-Testado no Brave (Chromium). Resultado: **há dados reais da conta em cache localmente (ao contrário do que pensávamos a meio da investigação), mas são inúteis** — o backend não está no ar para os aceitar, mesmo com uma sessão válida e não expirada.
+Testado no Brave (Chromium). Resultado: **há dados reais da conta em cache localmente, mas são inúteis** — o backend não está no ar para os aceitar, mesmo com uma sessão válida e não expirada.
 
 ## 1. Localizar o storage por origem, sem abrir o DevTools
 
@@ -52,10 +54,6 @@ Assim que a app conseguiu autenticar (`flutter.isLoggedIn: "true"`), o `localSto
 - `flutter.seriesToSkipWatchPreviousEpisodes` — uma lista de IDs de séries.
 
 Isto contraria a conclusão inicial: a app web **guarda**, sim, um resumo útil da conta localmente uma vez autenticada — só não guarda o histórico completo episódio-a-episódio como o `DioCache.db` da app nativa.
-
-### ⚠️ Nunca cola este token num site de terceiros
-
-Existem sites "de arquivo" da comunidade (não afiliados à Whip Media/TV Time) que pedem precisamente este `flutter.jwtToken`, com a promessa de "desbloquear mais dados" ou "ajudar a comunidade". **Não faças isso.** Um token de sessão válido dá a quem o recebe acesso à tua conta ao nível da API — é uma forma clássica de recolha de credenciais em massa, ainda por cima disfarçada de ferramenta de recuperação. Como a secção seguinte mostra, o backend real já não responde a este token de qualquer forma, o que torna a alegação de "desbloquear dados" tecnicamente incoerente.
 
 ## 4. Descobrir o host da API real (a partir do bundle da app)
 

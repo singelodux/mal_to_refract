@@ -1,16 +1,19 @@
 # MyAnimeList To Refract
 
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python 3](https://img.shields.io/badge/python-3-blue.svg)
+
 Converte a tua lista de anime do MyAnimeList para o formato "TV Time Liberator" que o import de TV Time do [Refract](https://getrefract.app/) aceita — para quem, como eu, ficou sem os dados do TV Time quando ele fechou.
 
-## Porquê: Top 10 traições dos animes
+## Porquê: TV Time garantiu vaga no Top 10 traições dos animes
 
-Venho usando TV Time há anos — desde 16 de julho de 2020, para ser mais específico, a app guardava a data exata — e, como a maioria dos utilizadores, perdi tudo o que vinha registando: 331 séries seguidas, 4928 likes, e sabe-se lá quantas horas de `time_spent`. Escravo de estatísticas, com muito orgulho.
+Toda saga de anime tem a sua traição inesquecível — aquele melhor amigo que vira vilão do nada. Desta vez não foi ficção.
 
-Senti-me traído. 15 dias sem notificar adequadamente as pessoas não é tempo suficiente. Notificação in-app para avisar do encerramento de uma plataforma com uma comunidade gigante é sacanagem, vindo de uma empresa que tem os nossos emails.
+Usei o TV Time desde 16 de julho de 2020 — a app guardava a data exata, e eu, escravo de estatísticas, sabia-a de cor. Perdi tudo o que vinha registando, como a maioria: 331 séries seguidas, 4928 likes, sabe-se lá quantas horas de `time_spent`. Com muito orgulho, diga-se.
 
-Como a maioria, visitei a plataforma tarde — 3 dias depois do encerramento no dia 15 de julho. Tentei buscar os meus dados pelo portal oficial de GDPR (`gdpr.tvtime.com`): o DNS já estava morto. Anos de histórico, simplesmente inacessíveis de um dia para o outro.
+Senti-me traído: 15 dias de aviso não chega, e uma notificação in-app não é forma de fechar uma plataforma com uma comunidade gigante. Fui tentar recuperar os dados só 3 dias depois do encerramento — e o portal oficial de GDPR (`gdpr.tvtime.com`) já tinha o DNS morto. Anos de histórico, gone.
 
-Este repositório é o registo do meu esforço (do Plano A ao D) para tentar recuperar o máximo possível dos meus dados, para não ter de registar tudo de novo do zero — porque é isso que vai acontecer, já que sou escravo de estatísticas.
+Este repositório é o registo do meu esforço (Planos A–D) para recuperar o máximo possível, para não ter de registar tudo de novo do zero — porque é isso que vai acontecer, já que sou escravo de estatísticas.
 
 ## Pelo menos tenho o MAL
 
@@ -38,7 +41,7 @@ No processo, resolve um problema real: o MAL dá a cada temporada de um anime o 
 # 2. Coloca o ficheiro em private/mal/ (ver private/mal/README.md)
 
 # 3. Corre o script — sem argumentos, encontra sozinho o ficheiro em private/mal/
-python3 mal_to_tvtime.py
+python3 mal_to_refract.py
 
 # 4. Output gerado fica em private/output/
 ```
@@ -51,32 +54,23 @@ Tudo o que é pessoal (o teu export do MAL, os ficheiros gerados) vive em `priva
 
 ## Estrutura do repo
 
-- [`docs/`](docs/) — resultados documentados de cada plano (público, sem dados pessoais)
-  - [`docs/research/`](docs/research/) — notas de terceiros, dados de exemplo e o `tvtime_recover.py` (fica junto da narrativa do Plano A que o usa)
-- [`mal_to_tvtime.py`](mal_to_tvtime.py) — o script, na raiz
-- `private/` — os meus dados pessoais, exports e resultados reais (fora do repo público, ver `.gitignore`)
-  - `private/mal/` — exports brutos do MyAnimeList
-  - `private/output/` — resultados reais gerados pelos scripts sobre os meus dados
+| Caminho | Conteúdo |
+| --- | --- |
+| [`docs/`](docs/) | resultados documentados de cada plano (público, sem dados pessoais) |
+| [`docs/resources/`](docs/resources/) | notas de terceiros, dados de exemplo, `tvtime_recover.py` |
+| [`mal_to_refract.py`](mal_to_refract.py) | o script, na raiz |
+| `private/` | dados pessoais, exports e resultados reais (fora do repo público, ver `.gitignore`) |
+| `private/mal/` | exports brutos do MyAnimeList |
+| `private/output/` | resultados reais gerados pelos scripts sobre os meus dados |
 
 ## Minhas tentativas: Planos A–D
 
-Quatro tentativas, por ordem, cada uma documentada com o que foi tentado e por que funcionou ou não.
-
-### Plano A — recuperar via cache do Android sem root
-
-Beco sem saída: `adb backup` está bloqueado para apps de terceiros desde o Android 12, em qualquer telemóvel sem root. Ver [docs/unrooted-android](docs/unrooted-android/).
-
-### Plano B — recuperar via storage do browser
-
-Beco sem saída: mesmo com uma sessão válida guardada localmente, o backend (`api2.tozelabs.com` e `api.tvtime.com`) está completamente desligado. Ver [docs/browser-storage](docs/browser-storage/).
-
-### Plano C — reconstruir a lista de anime a partir do MAL
-
-O MAL continua no ar — em vez de recuperar, reconstruir um ficheiro de importação a partir do que já lá está registado. É o `mal_to_tvtime.py` acima. Ver [docs/mal-import](docs/mal-import/).
-
-### Plano D — voltar a registar tudo de novo
-
-Felizmente não vai ser tudo, porque a maioria dos animes eu já registava sempre no MAL e no TV Time — só me restam filmes e séries.
+| Plano | Resultado | Detalhe |
+| --- | --- | --- |
+| **A** — cache do Android sem root | ❌ Beco sem saída — `adb backup` bloqueado para apps de terceiros desde o Android 12 | [docs/unrooted-android](docs/unrooted-android/) |
+| **B** — storage do browser | ❌ Beco sem saída — sessão válida guardada localmente, mas o backend está completamente desligado | [docs/browser-storage](docs/browser-storage/) |
+| **C** — reconstruir a lista via MAL | ✅ Funciona — é o `mal_to_refract.py` acima | [docs/mal-import](docs/mal-import/) |
+| **D** — registar tudo de novo | 🤷 Só o que sobrar — a maioria já estava também no MAL, só faltam filmes e séries | — |
 
 Espero ter ajudado de algum jeito.
 
