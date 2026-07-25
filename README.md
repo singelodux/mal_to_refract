@@ -60,6 +60,8 @@ python3 mal_to_refract.py
 
 ### 4. Import into Refract
 
+> ⚠️ **Note:** this script is meant for people who never got the chance to import real TV Time data. If you've already imported TV Time shows/movies into Refract, running this import on top may overwrite that data — back up your current import first. If you try it anyway, let us know how it goes.
+
 Refract → Settings/Import → **"TV Time"** → select the two `.json` files from `private/output/`. Refract shows how many shows/movies it recognized.
 
 ---
