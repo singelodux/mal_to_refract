@@ -7,80 +7,72 @@
 
 Converts your MyAnimeList anime list into the "TV Time Liberator" format that [Refract](https://getrefract.app/)'s TV Time import accepts — for anyone who, like me, lost their TV Time data when it shut down.
 
-## Why: TV Time earned a spot in the Top 10 anime betrayals
+---
 
-Every anime saga has its unforgettable betrayal — the best friend turned villain out of nowhere. This time it wasn't fiction.
+## 💔 Why this exists
 
-I'd used TV Time since July 16, 2020 — the app kept the exact date, and I, a stats junkie, knew it by heart. I lost everything I'd been tracking, like most people: 331 followed shows, 4928 likes, who knows how many hours of `time_spent`. Very proudly logged, I might add.
+Every anime saga has its unforgettable betrayal — the best friend turned villain out of nowhere. This time it wasn't fiction — TV Time made sure to earn its spot in the Top 10 anime betrayals.
 
-I felt betrayed: 15 days' notice isn't enough, and an in-app notification is no way to shut down a platform with a massive community. I went looking for my data just 3 days after the shutdown — and the official GDPR portal (`gdpr.tvtime.com`) already had dead DNS. Years of history, gone.
+I'd used TV Time since July 16, 2020, tracking 331 followed shows and 4928 likes. It shut down with only 15 days' notice, and by the time I went looking for my data 3 days later, the official GDPR portal (`gdpr.tvtime.com`) already had dead DNS. Years of history, gone.
 
-This repository is the record of my effort (Plans A–D) to recover as much as possible, so I wouldn't have to log everything again from scratch — because that's what's going to happen, since I'm a stats junkie.
+This repo is Plan C of my recovery attempts — the one that actually worked. The rest of the log (what didn't work) is at the bottom, under "My attempts".
 
-## At least I have MAL
+---
 
-### What it accepts
+## ⚙️ How it works
 
-MyAnimeList's official anime export (`https://myanimelist.net/panel.php?go=export`, "Anime List") — anyone can grab theirs, even without ever having had a TV Time account.
+**Accepts:** MyAnimeList's official anime export (`https://myanimelist.net/panel.php?go=export` → "Anime List") — anyone can grab theirs, even without ever having had a TV Time account.
 
-### What it produces
-
-The **"TV Time Liberator"** format — the same schema Refract's official Chrome extension produced while TV Time was still up, and which Refract's "TV Time" import still accepts even without that extension:
+**Produces:** the **"TV Time Liberator"** format — the same schema Refract's official Chrome extension used to produce while TV Time was still up, and which Refract's "TV Time" import still accepts:
 
 - `tvtime-series-<today>.json` — followed shows + watched episodes
 - `tvtime-movies-<today>.json` — watched movies
 
-The exact schema came from the open-source converter [jeremy-albinet/tvtime-to-refract-converter](https://github.com/jeremy-albinet/tvtime-to-refract-converter), which documents it from a real TV Time GDPR export.
+Schema documented by the open-source [jeremy-albinet/tvtime-to-refract-converter](https://github.com/jeremy-albinet/tvtime-to-refract-converter), taken from a real TV Time GDPR export.
 
-Along the way, it solves a real problem: MAL gives each season of an anime its own id (e.g. "Attack on Titan" and "Attack on Titan Season 2" are separate entries), but TV Time/TheTVDB treat the whole show as a single entry with multiple seasons. The script merges the right entries using the community mapping [Fribb/anime-lists](https://github.com/Fribb/anime-lists). Full detail in [docs/mal-import](docs/mal-import/).
+Along the way, it fixes a real mismatch: MAL gives each season its own id (e.g. "Attack on Titan" and "Attack on Titan Season 2" are separate entries), while TV Time/TheTVDB treat a show as a single entry with multiple seasons. The script merges the right entries using the community mapping [Fribb/anime-lists](https://github.com/Fribb/anime-lists). Full detail in [docs/mal-import](docs/mal-import/).
 
-### What you need before starting
+---
 
-You don't need to know how to code, but you need two things on your computer:
+## 🚀 Getting started
 
-1. **Python 3** — Mac and Linux usually already have it. To check, open a terminal (see how below) and type:
+### 1. Prerequisites
 
-   ```bash
-   python3 --version
-   ```
+No coding knowledge needed, just:
 
-   If you see `Python 3.x.x`, you're set. If you get an error like "command not found", install it from [python.org/downloads](https://www.python.org/downloads/) (on Windows, check the **"Add Python to PATH"** box during install — that's the most common thing people miss).
+- **Python 3** — check with `python3 --version` in a terminal. Missing it? Install from [python.org/downloads](https://www.python.org/downloads/) (Windows: check "Add Python to PATH" during install).
+- **This repo, downloaded** — no `git` needed. Click **Code → Download ZIP** on [the repo page](https://github.com/singelodux/mal_to_refract) and unzip it anywhere.
 
-2. **This repository, downloaded** — you don't need `git`. Go to [github.com/singelodux/mal_to_refract](https://github.com/singelodux/mal_to_refract), click the green **Code → Download ZIP** button, and unzip the folder anywhere.
+### 2. Open a terminal in the project folder
 
-### How to open a terminal in the project folder
-
-- **Windows**: inside the unzipped folder, hold Shift and right-click an empty space → "Open PowerShell window here" (or "Open in Terminal").
-- **Mac**: right-click the folder → Services → "New Terminal at Folder". (If that option isn't there, open Terminal normally, type `cd` and drag the folder into the window.)
+- **Windows**: Shift + right-click an empty space inside the folder → "Open PowerShell window here".
+- **Mac**: right-click the folder → Services → "New Terminal at Folder" (or open Terminal and type `cd`, then drag the folder in).
 - **Linux**: right-click inside the folder in your file manager → "Open in Terminal".
 
-### How to run it
+### 3. Run it
 
 ```bash
-# 1. Export your anime list at https://myanimelist.net/panel.php?go=export
-#    (logged in) → "Anime List" → download the .xml or .xml.gz
-
-# 2. Put that file inside the private/mal/ folder (inside the project folder)
-
-# 3. In the terminal opened in the project folder, run:
+# Export your list at https://myanimelist.net/panel.php?go=export → "Anime List"
+# Put the downloaded file in private/mal/, then run:
 python3 mal_to_refract.py
-
-# 4. The result (2 .json files) shows up in the private/output/ folder
+# Output (2 .json files) lands in private/output/
 ```
 
-### How to import into Refract
+### 4. Import into Refract
 
-1. Open Refract → Settings/Import → pick the **"TV Time"** import option.
-2. When it asks for files, select the two `.json` files from `private/output/` (one is `tvtime-series-<date>.json`, the other `tvtime-movies-<date>.json`).
-3. Confirm the import — Refract shows how many shows/movies it recognized.
+Refract → Settings/Import → **"TV Time"** → select the two `.json` files from `private/output/`. Refract shows how many shows/movies it recognized.
 
-## Privacy
+---
 
-The script runs entirely on your computer — it doesn't send anything anywhere, except the one-time, public download of the [Fribb/anime-lists](https://github.com/Fribb/anime-lists) mapping (`anime-list-full.json`, third-party anime data, not yours).
+## 🔒 Privacy
 
-Everything personal (your MAL export, the generated files) lives in `private/`, which is outside version control (see `.gitignore`) — only each subfolder's `README.md` is versioned, as a guide to where things go. See [Repo structure](#repo-structure) below.
+Runs entirely on your computer — nothing is sent anywhere, except the one-time, public download of the [Fribb/anime-lists](https://github.com/Fribb/anime-lists) mapping (`anime-list-full.json`, third-party anime data, not yours).
 
-## Repo structure
+Everything personal (your MAL export, the generated files) lives in `private/`, outside version control (see `.gitignore`) — see "Repo structure" below.
+
+---
+
+## 📁 Repo structure
 
 | Path | Contents |
 | --- | --- |
@@ -91,7 +83,9 @@ Everything personal (your MAL export, the generated files) lives in `private/`, 
 | `private/mal/` | raw MyAnimeList exports |
 | `private/output/` | real results generated by the scripts on my data |
 
-## My attempts: Plans A–D
+---
+
+## 🧭 My attempts: Plans A–D
 
 | Plan | Result | Detail |
 | --- | --- | --- |
@@ -102,6 +96,8 @@ Everything personal (your MAL export, the generated files) lives in `private/`, 
 
 Hope this helped somehow.
 
-## License
+---
+
+## 📄 License
 
 [MIT](./LICENSE)
